@@ -1,7 +1,7 @@
 ---
 # tasks file for sbaerlocher.traefik
 
-- name: create traefik network
+- name: Create external docker network for traefik
   docker_network:
     name: "{{ traefik_network }}"
     ipam_options:
@@ -11,7 +11,7 @@
   tags:
     - configuration
 
-- name: create traefik directory
+- name: Create traefik directory.
   file:
     path: "{{ item }}"
     state: directory
@@ -23,7 +23,7 @@
   tags:
     - configuration
 
-- name: configuration traefik
+- name: Create traefik configuration file.
   template:
     src: "traefik.toml.j2"
     dest: "/etc/traefik/traefik.toml"
@@ -31,21 +31,35 @@
     group: docker
     mode: 0550
   notify:
-    - restart proxy_1
+    - restart traefik
   tags:
     - configuration
 
-- name: start traefik
+- name: Create acme file to storing the certificats.
+  copy:
+    content: ""
+    dest: /etc/traefik/acme.json
+    force: no
+    group: docker
+    owner: root
+    mode: 0600
+  notify:
+    - restart traefik
+  tags:
+    - configuration
+
+- name: Ensure traefik is running.
   docker_container:
-    name: proxy_1
-    image: traefik
+    name: webproxy
+    image: "{{ traefik_image }}"
     restart_policy: unless-stopped
     published_ports:
       - "80:80"
       - "443:443"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /etc/traefik/traefik.toml:/etc/traefik/traefik.toml
+      - /etc/traefik/traefik.toml:/traefik.toml
+      - /etc/traefik/acme.json:/acme.json
       - /var/run/docker.sock:/var/run/docker.sock
       - traefik-data:/etc/traefik
     capabilities:

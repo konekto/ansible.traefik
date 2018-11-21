@@ -1,7 +1,7 @@
 ---
 # handlers file for sbaerlocher.traefik
 
-- name: restart proxy_1
+- name: restart traefik
   docker_container:
-    name: proxy_1
+    name: webproxy
     restart: true
