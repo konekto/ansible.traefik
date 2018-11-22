@@ -53,6 +53,9 @@
     name: webproxy
     image: "{{ traefik_image }}"
     restart_policy: unless-stopped
+    expose:
+      - 80
+      - 443
     published_ports:
       - "80:80"
       - "443:443"
