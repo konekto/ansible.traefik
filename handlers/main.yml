@@ -4,4 +4,23 @@
 - name: restart traefik
   docker_container:
     name: webproxy
+    image: "{{ traefik_image }}"
+    restart_policy: unless-stopped
+    expose:
+    - 80
+    - 443
+    published_ports:
+    - "80:80"
+    - "443:443"
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/traefik/traefik.toml:/etc/traefik/traefik.toml
+    - /etc/traefik/acme.json:/etc/traefik/acme.json
+    - /var/run/docker.sock:/var/run/docker.sock
+    - traefik-data:/etc/traefik
+    capabilities:
+    - net_bind_service
+    networks:
+    - name: "{{ traefik_network }}"
     restart: true
+    state: started
